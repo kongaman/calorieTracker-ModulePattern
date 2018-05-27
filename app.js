@@ -1,4 +1,4 @@
-//Storsge Controller
+//Storage Controller
 const StorageCtrl = (function() {
 
     //Public Methods
@@ -6,7 +6,7 @@ const StorageCtrl = (function() {
         storeItem: function(item) {
             let items;
             //Check if any items in localStorage
-            if (localStorage.getItem('items') === null ) {
+            if(localStorage.getItem('items') === null ) {
                 items = [];
                 //Push new item
                 items.push(item);
@@ -23,12 +23,46 @@ const StorageCtrl = (function() {
         },
         getItemsFromStorage: function() {
             let items;
-            if (localStorage.getItem('items') === null ) {
-                let items = [];
+            if(localStorage.getItem('items') === null) {
+                //If localStorag is not set yet set items to an empty array
+                items = [];
             } else {
+                //Set items to whats in localStorage
                 items = JSON.parse(localStorage.getItem('items')); 
             }
+            //Return for ItemCtrl data {items = ..... }
             return items;
+        },
+        updatedItemStorage: function(updatedItem) {
+            //Get whats in localStorage
+            let items = JSON.parse(localStorage.getItem('items'));
+            //Loop through items in ls
+            items.forEach(function(item, index) {
+                //Find item by id
+                if (updatedItem.id === item.id) {
+                    //Splice out old item, set new item
+                    items.splice(index, 1, updatedItem);
+                }
+            });
+            //Set localStorage
+            localStorage.setItem('items', JSON.stringify(items));
+        },
+        deleteItemFromStorage: function(id) {
+            //Get whats in localStorage
+            let items = JSON.parse(localStorage.getItem('items'));
+            //Loop through items in ls
+            items.forEach(function(item, index) {
+                //Find item by id
+                if (id === item.id) {
+                    //Splice out old item, set new item
+                    items.splice(index, 1);
+                }
+            });
+            //Set localStorage
+            localStorage.setItem('items', JSON.stringify(items));
+        },
+        clearItemsFromStorage: function() {
+            localStorage.removeItem('items');
         }
     }
 })();
@@ -355,6 +389,8 @@ const AppCtrl = (function(ItemCtrl, StorageCtrl, UICtrl) {
         const totalCalories = ItemCtrl.getTotalCalories();
         //Add total cal to UI
         UICtrl.showTotalCalories(totalCalories);
+        //Uodate localStorage
+        StorageCtrl.updatedItemStorage(updatedItem);
         //Clear edit State
         UICtrl.clearEditState();
         
@@ -373,6 +409,8 @@ const AppCtrl = (function(ItemCtrl, StorageCtrl, UICtrl) {
         const totalCalories = ItemCtrl.getTotalCalories();
         //Add total cal to UI
         UICtrl.showTotalCalories(totalCalories);
+        //Delete from localStorage
+        StorageCtrl.deleteItemFromStorage(currentItem.id);
         //Clear edit State
         UICtrl.clearEditState();
 
@@ -386,8 +424,10 @@ const AppCtrl = (function(ItemCtrl, StorageCtrl, UICtrl) {
         const totalCalories = ItemCtrl.getTotalCalories();
         //Add total cal to UI
         UICtrl.showTotalCalories(totalCalories);
-        //Delere all Items from UI
+        //Delete all Items from UI
         UICtrl.removeItems();
+        //Clear from LocalStorage
+        StorageCtrl.clearItemsFromStorage();
         //Hide <ul> Element
         UICtrl.hideList();
         
@@ -403,9 +443,8 @@ const AppCtrl = (function(ItemCtrl, StorageCtrl, UICtrl) {
             console.log('Initializing App');
             //Fetch Items from datastructure
             const items = ItemCtrl.getItems();
-
             //Check if any items
-            if (items.length === 0) {
+            if(items.length === 0) {
                 UICtrl.hideList();
             } else {
                //Populate list with items
